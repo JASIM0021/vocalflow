@@ -61,7 +61,8 @@ export function TTSInterface() {
         generate();
       }
     },
-    { enableOnFormTags: true }
+    { enableOnFormTags: ['TEXTAREA', 'INPUT'] },
+    [isLoading, text, generate]
   );
 
   useHotkeys(
@@ -77,6 +78,7 @@ export function TTSInterface() {
         togglePlayback();
       }
     },
+    { enabled: !!audioUrl },
     [audioUrl, togglePlayback]
   );
 
@@ -89,6 +91,7 @@ export function TTSInterface() {
         toast.success('Audio downloaded!');
       }
     },
+    { enabled: !!audioUrl, preventDefault: true },
     [audioUrl, download]
   );
 
