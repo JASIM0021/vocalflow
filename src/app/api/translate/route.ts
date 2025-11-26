@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Lingva Translate public instances (no API key needed)
-const LINGVA_INSTANCES = [
-  'https://lingva.ml',
-  'https://translate.plausibility.cloud',
-  'https://lingva.pussthecat.org',
-];
+// Language code mapping for MyMemory API
+// MyMemory uses standard ISO 639-1 codes
+const LANGUAGE_CODE_MAP: Record<string, string> = {
+  'zh': 'zh-CN',
+  'zh-CN': 'zh-CN',
+  'zh-TW': 'zh-TW',
+  'pt': 'pt-PT',
+  'pt-BR': 'pt-BR',
+  'pt-PT': 'pt-PT',
+};
+
+function normalizeLanguageCode(code: string): string {
+  return LANGUAGE_CODE_MAP[code] || code;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,46 +28,61 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing or invalid targetLanguage' }, { status: 400 });
     }
 
-    // Limit text length
-    const trimmedText = text.trim().slice(0, 5000);
+    // Limit text length (MyMemory has a 500 char limit per request for anonymous users)
+    const trimmedText = text.trim().slice(0, 500);
 
     if (trimmedText.length === 0) {
       return NextResponse.json({ error: 'Text cannot be empty' }, { status: 400 });
     }
 
-    // Try multiple instances for reliability
-    for (const instance of LINGVA_INSTANCES) {
-      try {
-        const url = `${instance}/api/v1/${sourceLanguage}/${targetLanguage}/${encodeURIComponent(trimmedText)}`;
+    const sourceLang = sourceLanguage === 'auto' ? 'autodetect' : normalizeLanguageCode(sourceLanguage);
+    const targetLang = normalizeLanguageCode(targetLanguage);
 
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+    // Use MyMemory Translation API (free, no API key required)
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmedText)}&langpair=${sourceLang}|${targetLang}`;
 
-        if (response.ok) {
-          const data = await response.json();
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'VocalFlow/1.0 (Text-to-Speech Application)',
+      },
+    });
 
-          if (data.translation) {
-            return NextResponse.json({
-              translatedText: data.translation,
-              detectedLanguage: data.info?.detectedSource || sourceLanguage,
-              targetLanguage,
-            });
-          }
-        }
-      } catch (error) {
-        console.warn(`Lingva instance ${instance} failed:`, error);
-        continue;
-      }
+    if (!response.ok) {
+      console.error('MyMemory API error:', response.status, response.statusText);
+      return NextResponse.json(
+        { error: 'Translation service unavailable. Please try again.' },
+        { status: 503 }
+      );
     }
 
-    // All instances failed
+    const data = await response.json();
+
+    if (data.responseStatus === 200 && data.responseData?.translatedText) {
+      // Check if translation quality is acceptable
+      const match = data.responseData.match;
+
+      return NextResponse.json({
+        translatedText: data.responseData.translatedText,
+        detectedLanguage: data.responseData.detectedLanguage || sourceLang,
+        targetLanguage: targetLang,
+        confidence: match,
+      });
+    }
+
+    // Handle specific error cases
+    if (data.responseStatus === 403) {
+      return NextResponse.json(
+        { error: 'Translation quota exceeded. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    console.error('MyMemory translation failed:', data);
     return NextResponse.json(
-      { error: 'Translation service unavailable. Please try again.' },
-      { status: 503 }
+      { error: 'Translation failed. Please try again.' },
+      { status: 500 }
     );
   } catch (error) {
     console.error('Translation error:', error);
