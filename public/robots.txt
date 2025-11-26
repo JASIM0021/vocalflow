@@ -1,0 +1,12 @@
+# robots.txt for VocalFlow
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://vocalflow.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow API routes
+Disallow: /api/
