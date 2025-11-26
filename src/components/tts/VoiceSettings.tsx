@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronDown, RotateCcw, Volume2, Gauge, Music } from 'lucide-react';
+import { ChevronDown, RotateCcw, Volume2, Gauge, Music, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Collapsible,
   CollapsibleContent,
@@ -168,6 +169,28 @@ export function VoiceSettings({
                 {preset.name}
               </Button>
             ))}
+          </div>
+        </div>
+
+        {/* Auto-Translate */}
+        <div className="pt-4 border-t border-border/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                <Languages className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Auto-Translate</Label>
+                <p className="text-xs text-muted-foreground">
+                  Translate text to match voice language
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={settings.autoTranslate}
+              onCheckedChange={(checked) => onChange({ autoTranslate: checked })}
+              disabled={disabled}
+            />
           </div>
         </div>
       </CollapsibleContent>

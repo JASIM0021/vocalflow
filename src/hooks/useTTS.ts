@@ -8,6 +8,7 @@ import {
   HistoryItem,
   MAX_HISTORY_ITEMS,
 } from '@/types';
+import { translateText, getVoiceLanguage } from '@/lib/translate';
 
 const HISTORY_KEY = 'vocalflow-history';
 
@@ -69,11 +70,25 @@ export function useTTS() {
     setAudioBlob(null);
 
     try {
+      let textToSpeak = text.trim();
+
+      // Auto-translate if enabled
+      if (settings.autoTranslate) {
+        const targetLanguage = getVoiceLanguage(voice);
+        try {
+          const result = await translateText(textToSpeak, targetLanguage);
+          textToSpeak = result.translatedText;
+        } catch (err) {
+          console.warn('Translation failed, using original text:', err);
+          // Continue with original text if translation fails
+        }
+      }
+
       const response = await fetch('/api/synthesize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text.trim(),
+          text: textToSpeak,
           voice,
           rate: settings.rate,
           pitch: settings.pitch,
@@ -93,7 +108,7 @@ export function useTTS() {
       setAudioBlob(blob);
       setAudioUrl(url);
 
-      // Add to history
+      // Add to history (store original text, not translated)
       addToHistory(text.trim(), voice, settings);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');

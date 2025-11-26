@@ -29,9 +29,10 @@ export interface VoiceGroup {
 
 // TTS Settings
 export interface TTSSettings {
-  rate: number;      // 0.5 to 2.0 (1.0 = normal, displayed as percentage)
-  pitch: number;     // -10 to 10 (0 = normal)
-  volume: number;    // 0 to 100 (100 = normal)
+  rate: number;           // 0.5 to 2.0 (1.0 = normal, displayed as percentage)
+  pitch: number;          // -10 to 10 (0 = normal)
+  volume: number;         // 0 to 100 (100 = normal)
+  autoTranslate: boolean; // Auto-translate text to voice language
 }
 
 // TTS State
@@ -161,6 +162,7 @@ export const DEFAULT_SETTINGS: TTSSettings = {
   rate: 1.0,
   pitch: 0,
   volume: 100,
+  autoTranslate: false,
 };
 
 export const DEFAULT_VOICE = 'en-US-AriaNeural';
