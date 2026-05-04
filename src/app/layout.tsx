@@ -105,7 +105,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', type: 'image/svg+xml' },
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
@@ -168,7 +168,7 @@ const jsonLd = {
         '@type': 'ImageObject',
         url: `${siteUrl}/icon.svg`,
       },
-      sameAs: ['https://github.com/vocalflow', 'https://twitter.com/vocalflow'],
+      sameAs: ['https://github.com/jasim0021/vocalflow', 'https://twitter.com/vocalflow'],
     },
     {
       '@type': 'WebSite',

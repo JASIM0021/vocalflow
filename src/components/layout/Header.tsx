@@ -81,7 +81,7 @@ export function Header() {
                     asChild
                   >
                     <a
-                      href="https://github.com"
+                      href="https://github.com/jasim0021/vocalflow"
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="View on GitHub"
